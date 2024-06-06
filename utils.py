@@ -7,8 +7,15 @@ from math import sqrt
 import yaml
 from tqdm import tqdm
 import importlib
+import random
+import numpy as np
 from models.MatrixFactorization import MatrixFactorization
 from dataset.dataset import RatingsDataset
+
+def set_seed(seed=42):
+    random.seed(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
 
 def load_hyperparameters(model_type):
     file_path = os.path.join('config', 'hyperparams.yaml')
@@ -77,7 +84,7 @@ def create_dataloaders(train_dataset, test_dataset, batch_size):
     test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=True)
     return train_loader, test_loader
 
-def train_model(model, train_loader, lr, epochs, weight_decay):
+def train_model(model, train_loader, lr, epochs, weight_decay, device):
     loss_fn = torch.nn.MSELoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=lr, weight_decay=weight_decay)
     model.train()
@@ -85,6 +92,7 @@ def train_model(model, train_loader, lr, epochs, weight_decay):
     for epoch in range(epochs):
         total_loss = 0
         for users, itens, ratings in train_loader:
+            users, itens, ratings = users.to(device), itens.to(device), ratings.to(device)
             optimizer.zero_grad()
             predictions = model(users, itens)
             loss = loss_fn(predictions, ratings)
@@ -94,22 +102,23 @@ def train_model(model, train_loader, lr, epochs, weight_decay):
 
     return model
 
-def evaluate_model(model, test_loader):
+def evaluate_model(model, test_loader, device):
     model.eval()
     predictions = []
     actuals = []
 
     with torch.no_grad():
         for users, itens, ratings in test_loader:
+            users, itens, ratings = users.to(device), itens.to(device), ratings.to(device)
             preds = model(users, itens)
-            predictions.extend(preds.numpy())
-            actuals.extend(ratings.numpy())
+            predictions.extend(preds.cpu().numpy())
+            actuals.extend(ratings.cpu().numpy())
 
     rmse = sqrt(mean_squared_error(actuals, predictions))
     return rmse
 
 
-def grid_search(model, model_type, train_dataset, test_dataset, base_name):
+def grid_search(model, model_type, train_dataset, test_dataset, base_name, device):
     best_rmse = float('inf')
     best_params = None
 
@@ -120,8 +129,8 @@ def grid_search(model, model_type, train_dataset, test_dataset, base_name):
 
         train_loader, test_loader = create_dataloaders(train_dataset, test_dataset, params['batch_size'])
         
-        model = train_model(model, train_loader, lr=params['learning_rate'], epochs=params['epochs'], weight_decay=params['weight_decay'])
-        rmse = evaluate_model(model, test_loader)
+        model = train_model(model, train_loader, lr=params['learning_rate'], epochs=params['epochs'], weight_decay=params['weight_decay'],device=device)
+        rmse = evaluate_model(model, test_loader, device)
 
         if rmse < best_rmse:
             best_rmse = rmse
