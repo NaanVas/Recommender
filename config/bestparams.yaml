@@ -2,8 +2,8 @@ Movielens:
   MatrixFactorization:
     BestParameters:
       batch_size: 512
-      embedding_dim: 50
-      epochs: 200
+      embedding_dim: 40
+      epochs: 10
       learning_rate: 0.001
-      weight_decay: 0.0001
-    BestRMSE: 1.0145528562904411
+      weight_decay: 0.0
+    BestRMSE: 5.049769466161496

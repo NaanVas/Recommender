@@ -2,11 +2,9 @@ import os
 import torch
 import argparse
 import yaml
-import importlib
 import pandas as pd
-from torch.utils.data import DataLoader
-from utils import train_model, evaluate_model, grid_search, load_model, load_hyperparameters, save_best_parameters, load_stats_and_data, create_dataloaders, set_seed, save_results_csv
 from dataset.dataset import RatingsDataset
+from utils import train_model, evaluate_model, grid_search, load_model, load_stats, create_dataloaders, set_seed, save_results_csv
 
 def main(base_name, model_type, grid_search_flag, use_gpu):
     set_seed(seed=11, use_gpu=use_gpu)
@@ -24,10 +22,13 @@ def main(base_name, model_type, grid_search_flag, use_gpu):
     train_data = pd.read_csv(train_data_patch)
     test_data = pd.read_csv(test_data_patch)
 
-    num_users, num_itens, train_dataset, test_dataset = load_stats_and_data(base_name, train_data, test_data)
+    num_users, num_itens = load_stats(base_name)
+    train_dataset = RatingsDataset(train_data)
+    test_dataset = RatingsDataset(test_data)
 
     if grid_search_flag:
-        model = load_model(model_type, num_users, num_itens).to(device)
+        params = {}
+        model = load_model(model_type, num_users, num_itens, params).to(device)
         grid_search(model, model_type, train_dataset, test_dataset, base_name, device=device)
 
     else:
@@ -40,7 +41,7 @@ def main(base_name, model_type, grid_search_flag, use_gpu):
             raise ValueError(f'Parametros para {model_type} na base {base_name} não encontrados')
         
         model_params = best_params[base_name][model_type]['BestParameters']
-        model = load_model(model_type, num_users, num_itens).to(device)
+        model = load_model(model_type, num_users, num_itens, model_params).to(device)
 
         train_loader, test_loader = create_dataloaders(train_dataset, test_dataset, model_params['batch_size'])
 

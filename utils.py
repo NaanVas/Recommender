@@ -3,16 +3,13 @@ import torch
 from torch.utils.data import DataLoader
 from sklearn.model_selection import ParameterGrid
 from sklearn.metrics import mean_squared_error, precision_score, recall_score
-from math import sqrt
 import yaml
 from tqdm import tqdm
 import importlib
 import random
 import numpy as np
 import pandas as pd
-
-from dataset.dataset import RatingsDataset
-from metrics import rmse, mse, f1score, ndcg
+from metrics import rmse, f1score, ndcg
 
 def set_seed(seed, use_gpu):
     random.seed(seed)
@@ -56,7 +53,7 @@ def save_best_parameters(base_name, model_type, best_params, best_rmse):
     with open(file_path, 'w') as file:
         yaml.safe_dump(all_params, file)
 
-def load_model(model_type, num_users, num_itens):
+def load_model(model_type, num_users, num_itens, params):
     model_file = os.path.join('models', f'{model_type}.py')
 
     if not os.path.isfile(model_file):
@@ -64,9 +61,24 @@ def load_model(model_type, num_users, num_itens):
     
     module = importlib.import_module(f'models.{model_type}')
     model_class = getattr(module, model_type)
-    return model_class(num_users, num_itens)
 
-def load_stats_and_data(base_name, train_data, test_data):
+    if model_type == 'MatrixFactorization':
+        if params is None or 'embedding_dim' not in params:
+            print('Parâmetro "Embedding_dim" necessário para Matrix factorization não encontrado.')
+            return model_class(num_users, num_itens, embedding_dim = 20)
+    
+        return model_class(num_users, num_itens, params['embedding_dim'])
+    
+    if model_type == 'NMF':
+        if params is None or 'latent_factors' not in params:
+            print('Parâmetro "latent_factors" necessário para NMF não encontrado.')
+            return model_class(num_users, num_itens, latent_factors = 20)
+
+        return model_class(num_users, num_itens, params['latent_factors'])
+    
+    return 0
+
+def load_stats(base_name):
     stats_file = os.path.join('config', 'stats.yaml')
     with open(stats_file, 'r') as file:
         stats = yaml.safe_load(file)
@@ -78,10 +90,7 @@ def load_stats_and_data(base_name, train_data, test_data):
     else:
         raise ValueError(f'Estatísticas não encontradas para a base de dados {base_name}')
 
-    train_dataset = RatingsDataset(train_data)
-    test_dataset = RatingsDataset(test_data)
-
-    return num_users, num_itens, train_dataset, test_dataset
+    return num_users, num_itens
 
 def create_dataloaders(train_dataset, test_dataset, batch_size):
     train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
@@ -132,7 +141,7 @@ def evaluate_model(model, test_loader, device):
 
     for metric in metrics:
         if metric == 'mse':
-            results[metric] = mse.mse(actuals, predictions)
+            results[metric] = mean_squared_error(actuals, predictions)
         if metric == 'precision':
             results[metric] = precision_score(np.around(actuals), np.around(predictions), average="macro", zero_division=np.nan)
         if metric == 'recall':
@@ -161,8 +170,10 @@ def grid_search(model, model_type, train_dataset, test_dataset, base_name, devic
 
     hyperparams = load_hyperparameters(model_type)
 
+    num_users, num_itens = load_stats(base_name)
     for params in tqdm(ParameterGrid(hyperparams), desc='Grid Search Progress'):
-        #print(f'Testando parâmetros: {params}')
+        #Reinicializar modelo para cada conjunto de hiperparametros
+        model = load_model(model_type, num_users, num_itens, params).to(device)
 
         train_loader, test_loader = create_dataloaders(train_dataset, test_dataset, params['batch_size'])
         
