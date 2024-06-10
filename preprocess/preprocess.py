@@ -2,18 +2,21 @@ import sys
 import os
 import yaml
 from utils import preprocess_data, load_data
+import argparse
 
 def main(base_name):
-    df = load_data()
-    train_data, test_data = preprocess_data(df)
+    df = load_data(base_name)
+    train_data, test_data, data = preprocess_data(df, base_name)
 
     #Salvar dados preprocessados
-    data_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)),'..','dataset' ,'.data')
+    data_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)),'..','dataset' ,'.data', base_name)
     if not os.path.exists(data_dir):
         os.makedirs(data_dir)
     
     train_data.to_csv(os.path.join(data_dir, 'train_data.csv'), index=False)
     test_data.to_csv(os.path.join(data_dir, 'test_data.csv'), index=False)
+    data.to_csv(os.path.join(data_dir, 'data.csv'), index=False)
+
 
     #Salvar estatísticas
     stats_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'config')
@@ -42,9 +45,8 @@ def main(base_name):
     print("Dados carregados e preprocessados com sucesso.")
 
 if __name__ == '__main__':
-    if len(sys.argv) != 2:
-        print("Uso: python3 preprocess.py base_name")
-        sys.exit(1)
-    
-    base_name = sys.argv[1]
-    main(base_name)
+    parser = argparse.ArgumentParser(description='Preprocess for Recommender System train and evaluation')
+    parser.add_argument('--base', type=str,required=True ,help='Nome da base de dados')
+    args = parser.parse_args()
+
+    main(args.base)

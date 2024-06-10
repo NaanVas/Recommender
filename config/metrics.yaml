@@ -1,0 +1,6 @@
+metrics:
+  - rmse
+  - mse
+  - precision
+  - recall
+  - f1score

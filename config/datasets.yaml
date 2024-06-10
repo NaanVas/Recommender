@@ -1,0 +1,14 @@
+datasets:
+  Movielens:
+    file_name: 'u.data'
+    url: 'http://files.grouplens.org/datasets/movielens/ml-100k/u.data'
+    column_names: ['user_id', 'item_id', 'rating', 'timestamp']
+    file_format: 'csv'
+    delimiter: 'tab'
+
+  MusicalInstruments:
+    file_name: 'ratings_Musical_Instruments.csv'
+    url: 'https://snap.stanford.edu/data/amazon/productGraph/categoryFiles/ratings_Musical_Instruments.csv'
+    column_names: ['user_id', 'item_id', 'rating', 'timestamp']
+    file_format: 'csv'
+    delimiter: ','

@@ -9,13 +9,17 @@ from tqdm import tqdm
 import importlib
 import random
 import numpy as np
+import pandas as pd
 from models.MatrixFactorization import MatrixFactorization
 from dataset.dataset import RatingsDataset
+from metrics import rmse, mse, precision, recall, f1score, ndcg
 
-def set_seed(seed=42):
+def set_seed(seed, use_gpu):
     random.seed(seed)
     np.random.seed(seed)
     torch.manual_seed(seed)
+    if use_gpu:
+        torch.cuda.manual_seed_all(seed)
 
 def load_hyperparameters(model_type):
     file_path = os.path.join('config', 'hyperparams.yaml')
@@ -90,6 +94,7 @@ def train_model(model, train_loader, lr, epochs, weight_decay, device):
     model.train()
 
     for epoch in range(epochs):
+        model.train()
         total_loss = 0
         for users, itens, ratings in train_loader:
             users, itens, ratings = users.to(device), itens.to(device), ratings.to(device)
@@ -102,7 +107,14 @@ def train_model(model, train_loader, lr, epochs, weight_decay, device):
 
     return model
 
+def load_metrics():
+    metrics_path = os.path.join('config','metrics.yaml')
+    with open(metrics_path, 'r') as file:
+        config = yaml.safe_load(file)
+    return config['metrics']
+
 def evaluate_model(model, test_loader, device):
+    metrics = load_metrics()
     model.eval()
     predictions = []
     actuals = []
@@ -114,9 +126,34 @@ def evaluate_model(model, test_loader, device):
             predictions.extend(preds.cpu().numpy())
             actuals.extend(ratings.cpu().numpy())
 
-    rmse = sqrt(mean_squared_error(actuals, predictions))
-    return rmse
+    results = {
+        'rmse': rmse.rmse(actuals, predictions)
+    }
 
+    for metric in metrics:
+        if metric == 'mse':
+            results[metric] = mse.mse(actuals, predictions)
+        if metric == 'precision':
+            results[metric] = precision.precision(actuals, predictions, k=10)
+        if metric == 'recall':
+            results[metric] = recall.recall(actuals, predictions, k=10)
+        if metric == 'f1score':
+            results[metric] = f1score.f1_score(actuals, predictions, k=10)
+        if metric == 'ndcg':
+            results[metric] = ndcg.ndcg(actuals, predictions, k=10)
+
+    return results
+
+def save_results_csv(results, model_type, base_name):
+    if not os.path.exists('results'):
+        os.makedirs('results')
+
+    file_name = f'results/{base_name}_{model_type}_results.csv'
+
+    df = pd.DataFrame(results.items(), columns=['Metric', 'Value'])
+    df.to_csv(file_name, index=False)
+
+    print(f'Resultados salvos em {file_name}')
 
 def grid_search(model, model_type, train_dataset, test_dataset, base_name, device):
     best_rmse = float('inf')
@@ -130,13 +167,14 @@ def grid_search(model, model_type, train_dataset, test_dataset, base_name, devic
         train_loader, test_loader = create_dataloaders(train_dataset, test_dataset, params['batch_size'])
         
         model = train_model(model, train_loader, lr=params['learning_rate'], epochs=params['epochs'], weight_decay=params['weight_decay'],device=device)
-        rmse = evaluate_model(model, test_loader, device)
+        results = evaluate_model(model, test_loader, device)
 
-        if rmse < best_rmse:
-            best_rmse = rmse
+        if results['rmse'] < best_rmse:
+            best_rmse = results['rmse']
             best_params = params
 
     save_best_parameters(base_name, model_type, best_params, best_rmse)
+    save_results_csv(results, model_type, base_name)
 
     print(f'Melhores parametros encontrados: {best_params}')
     print(f'RMSE: {best_rmse}')

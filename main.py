@@ -5,11 +5,11 @@ import yaml
 import importlib
 import pandas as pd
 from torch.utils.data import DataLoader
-from utils import train_model, evaluate_model, grid_search, load_model, load_hyperparameters, save_best_parameters, load_stats_and_data, create_dataloaders, set_seed
+from utils import train_model, evaluate_model, grid_search, load_model, load_hyperparameters, save_best_parameters, load_stats_and_data, create_dataloaders, set_seed, save_results_csv
 from dataset.dataset import RatingsDataset
 
 def main(base_name, model_type, grid_search_flag, use_gpu):
-    set_seed()
+    set_seed(seed=11, use_gpu=use_gpu)
 
     device = torch.device('cuda' if torch.cuda.is_available() and use_gpu else 'cpu')
     print(f'Dispositivo: {device}')
@@ -45,9 +45,12 @@ def main(base_name, model_type, grid_search_flag, use_gpu):
         train_loader, test_loader = create_dataloaders(train_dataset, test_dataset, model_params['batch_size'])
 
         model = train_model(model, train_loader, lr=model_params['learning_rate'], epochs=model_params['epochs'], weight_decay=model_params['weight_decay'], device=device)
-        rmse = evaluate_model(model, test_loader, device)
+        results = evaluate_model(model, test_loader, device)
 
-        print(f'Modelo treinado com melhores parametros. RMSE:{rmse}')
+        save_results_csv(results, model_type, base_name)
+
+
+        print(f'Modelo treinado com melhores parametros.')
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Recommender System training and evaluation')
