@@ -14,7 +14,7 @@ def main(base_name, model_type, grid_search_flag, use_gpu):
     device = torch.device('cuda' if torch.cuda.is_available() and use_gpu else 'cpu')
     print(f'Dispositivo: {device}')
 
-    data_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'dataset', '.data')
+    data_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'dataset', '.data', f'{base_name}')
     train_data_patch = os.path.join(data_dir, 'train_data.csv')
     test_data_patch = os.path.join(data_dir, 'test_data.csv')
 

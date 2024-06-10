@@ -1,10 +1,10 @@
-from .precision import precision
-from .recall import recall
+from sklearn.metrics import precision_score, recall_score
+import numpy as np
 
-def f1_score(actuals, prediction, k):
-    prec = precision(actuals, prediction, k)
-    rec = recall(actuals, prediction, k)
-    if prec + rec == 0:
+def f1_score(actuals, predictions):
+    precision = precision_score(np.around(actuals), np.around(predictions), average="macro", zero_division=np.nan)
+    recall = recall_score(np.around(actuals), np.around(predictions), average="macro", zero_division=np.nan)
+    if precision + recall == 0:
         return 0
     
-    return 2* (prec * rec) / (prec + rec)
+    return 2* (precision * recall) / (precision + recall)

@@ -2,7 +2,7 @@ import os
 import torch
 from torch.utils.data import DataLoader
 from sklearn.model_selection import ParameterGrid
-from sklearn.metrics import mean_squared_error
+from sklearn.metrics import mean_squared_error, precision_score, recall_score
 from math import sqrt
 import yaml
 from tqdm import tqdm
@@ -10,9 +10,9 @@ import importlib
 import random
 import numpy as np
 import pandas as pd
-from models.MatrixFactorization import MatrixFactorization
+
 from dataset.dataset import RatingsDataset
-from metrics import rmse, mse, precision, recall, f1score, ndcg
+from metrics import rmse, mse, f1score, ndcg
 
 def set_seed(seed, use_gpu):
     random.seed(seed)
@@ -134,11 +134,11 @@ def evaluate_model(model, test_loader, device):
         if metric == 'mse':
             results[metric] = mse.mse(actuals, predictions)
         if metric == 'precision':
-            results[metric] = precision.precision(actuals, predictions, k=10)
+            results[metric] = precision_score(np.around(actuals), np.around(predictions), average="macro", zero_division=np.nan)
         if metric == 'recall':
-            results[metric] = recall.recall(actuals, predictions, k=10)
+            results[metric] = recall_score(np.around(actuals), np.around(predictions), average="macro", zero_division=np.nan)
         if metric == 'f1score':
-            results[metric] = f1score.f1_score(actuals, predictions, k=10)
+            results[metric] = f1score.f1_score(actuals, predictions)
         if metric == 'ndcg':
             results[metric] = ndcg.ndcg(actuals, predictions, k=10)
 
