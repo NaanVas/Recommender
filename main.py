@@ -14,22 +14,25 @@ def main(base_name, model_type, grid_search_flag, use_gpu):
 
     data_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'dataset', '.data', f'{base_name}')
     train_data_patch = os.path.join(data_dir, 'train_data.csv')
+    val_data_patch = os.path.join(data_dir, 'val_data.csv')
     test_data_patch = os.path.join(data_dir, 'test_data.csv')
 
-    if not os.path.exists(train_data_patch) or not os.path.exists(test_data_patch):
+    if not os.path.exists(train_data_patch) or not os.path.exists(val_data_patch) or not os.path.exists(test_data_patch):
         raise FileNotFoundError('Dados preprocessados não encontrados. Execute o script preprocess.py primeiro')
     
     train_data = pd.read_csv(train_data_patch)
+    val_data = pd.read_csv(val_data_patch)
     test_data = pd.read_csv(test_data_patch)
 
     num_users, num_itens = load_stats(base_name)
     train_dataset = RatingsDataset(train_data)
+    val_dataset = RatingsDataset(val_data)
     test_dataset = RatingsDataset(test_data)
 
     if grid_search_flag:
         params = {}
         model = load_model(model_type, num_users, num_itens, params).to(device)
-        grid_search(model, model_type, train_dataset, test_dataset, base_name, device=device)
+        grid_search(model, model_type, train_dataset, val_dataset, test_dataset, base_name, device=device)
 
     else:
         best_params_path = os.path.join('config', 'bestparams.yaml')
@@ -43,9 +46,9 @@ def main(base_name, model_type, grid_search_flag, use_gpu):
         model_params = best_params[base_name][model_type]['BestParameters']
         model = load_model(model_type, num_users, num_itens, model_params).to(device)
 
-        train_loader, test_loader = create_dataloaders(train_dataset, test_dataset, model_params['batch_size'])
+        train_loader, val_loader ,test_loader = create_dataloaders(train_dataset, val_dataset, test_dataset, model_params['batch_size'])
 
-        model = train_model(model, train_loader, lr=model_params['learning_rate'], epochs=model_params['epochs'], weight_decay=model_params['weight_decay'], device=device)
+        model = train_model(model, train_loader, val_loader,lr=model_params['learning_rate'], epochs=model_params['epochs'], weight_decay=model_params['weight_decay'], device=device)
         results = evaluate_model(model, test_loader, device)
 
         save_results_csv(results, model_type, base_name)

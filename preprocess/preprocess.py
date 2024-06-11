@@ -6,7 +6,7 @@ import argparse
 
 def main(base_name):
     df = load_data(base_name)
-    train_data, test_data, data = preprocess_data(df, base_name)
+    train_data, val_data, test_data, data = preprocess_data(df, base_name)
 
     #Salvar dados preprocessados
     data_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)),'..','dataset' ,'.data', base_name)
@@ -14,6 +14,7 @@ def main(base_name):
         os.makedirs(data_dir)
     
     train_data.to_csv(os.path.join(data_dir, 'train_data.csv'), index=False)
+    val_data.to_csv(os.path.join(data_dir, 'val_data.csv'), index=False)
     test_data.to_csv(os.path.join(data_dir, 'test_data.csv'), index=False)
     data.to_csv(os.path.join(data_dir, 'data.csv'), index=False)
 

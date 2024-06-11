@@ -53,8 +53,9 @@ def preprocess_data(df, base_name):
     else:
         df = ordenar_df(df, data_config)
 
-    train_data, test_data = train_test_split(df, test_size=0.20)
-    return train_data, test_data, df
+    train_data, temp_data = train_test_split(df, test_size=0.40)
+    val_data, test_data = train_test_split(temp_data, test_size=0.25)
+    return train_data, val_data, test_data, df
 
 def ordenar_df(df, data_config):
 
