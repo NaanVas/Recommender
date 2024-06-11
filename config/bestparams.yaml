@@ -6,7 +6,7 @@ Movielens:
       epochs: 10
       learning_rate: 0.001
       weight_decay: 0.0
-    BestRMSE: 6.081186656092727
+    BestRMSE: 6.302612416990957
   NMF:
     BestParameters:
       batch_size: 64

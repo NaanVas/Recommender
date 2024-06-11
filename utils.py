@@ -10,6 +10,7 @@ import random
 import numpy as np
 import pandas as pd
 from metrics import rmse, f1score, ndcg
+import csv
 
 def set_seed(seed, use_gpu):
     random.seed(seed)
@@ -130,7 +131,7 @@ def train_model(model, train_loader, val_loader, lr, epochs, weight_decay, devic
         avg_train_loss = total_loss/len(train_loader)
         avg_val_loss = total_loss/len(val_loader)
 
-        print(f'Epoch {epoch + 1}, Training Loss: {avg_train_loss:.4f}, Validation Loss: {avg_val_loss:.4f}')
+        #print(f'Epoch {epoch + 1}, Training Loss: {avg_train_loss:.4f}, Validation Loss: {avg_val_loss:.4f}')
 
         if avg_val_loss < best_val_loss:
             best_val_loss = avg_val_loss
@@ -178,39 +179,64 @@ def evaluate_model(model, test_loader, device):
 
     return results
 
-def save_results_csv(results, model_type, base_name):
+def save_best_results_csv(results_dict, model_type, base_name):
     if not os.path.exists('results'):
         os.makedirs('results')
 
     file_name = f'results/{base_name}_{model_type}_results.csv'
 
-    df = pd.DataFrame(results.items(), columns=['Metric', 'Value'])
+    df = pd.DataFrame(results_dict.items(), columns=['Metric', 'Value'])
     df.to_csv(file_name, index=False)
 
     print(f'Resultados salvos em {file_name}')
 
+
+def save_hyperparams_results(results_list, model_type, base_name, hyperparams_config):
+    if not os.path.exists('results'):
+        os.makedirs('results')
+
+    file_name = f'results/{base_name}_{model_type}_all_results.csv'
+
+    with open(file_name, mode='w', newline='') as file:
+        writer = csv.writer(file)
+
+        header = list(hyperparams_config.keys()) + ['rmse']
+        writer.writerow(header)
+
+        for entry in results_list:
+            params = entry['params']
+            results = entry['results']
+
+            row = [params.get(hp,'N/A') for hp in hyperparams_config.keys()] + [results['rmse']]
+            writer.writerow(row)
+
 def grid_search(model, model_type, train_dataset, val_dataset, test_dataset, base_name, device):
     best_rmse = float('inf')
     best_params = None
+    best_results = None
+    results_list = []
 
     hyperparams = load_hyperparameters(model_type)
-
     num_users, num_itens = load_stats(base_name)
+
     for params in tqdm(ParameterGrid(hyperparams), desc='Grid Search Progress'):
         #Reinicializar modelo para cada conjunto de hiperparametros
         model = load_model(model_type, num_users, num_itens, params).to(device)
-
         train_loader, val_loader, test_loader = create_dataloaders(train_dataset, val_dataset, test_dataset, params['batch_size'])
         
         model = train_model(model, train_loader, val_loader, lr=params['learning_rate'], epochs=params['epochs'], weight_decay=params['weight_decay'],device=device)
         results = evaluate_model(model, test_loader, device)
 
+        results_list.append({'params': params, 'results': results})
+
         if results['rmse'] < best_rmse:
             best_rmse = results['rmse']
             best_params = params
+            best_results = results
 
     save_best_parameters(base_name, model_type, best_params, best_rmse)
-    save_results_csv(results, model_type, base_name)
+    save_best_results_csv(best_results, model_type, base_name)
+    save_hyperparams_results(results_list, model_type, base_name, hyperparams)
 
     print(f'Melhores parametros encontrados: {best_params}')
     print(f'RMSE: {best_rmse}')

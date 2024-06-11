@@ -9,13 +9,12 @@ class MatrixFactorization(nn.Module):
         self.item_embedding = nn.Embedding(num_items, embedding_dim)
         self.user_bias = nn.Embedding(num_users, 1)
         self.item_bias = nn.Embedding(num_items, 1)
-        self.global_bias = nn.Parameter(torch.Tensor([0.0]))
 
     def forward(self, user, item):
         user_embedded = self.user_embedding(user)
         item_embedded = self.item_embedding(item)
-        dot_product = (user_embedded * item_embedded).sum(1)
         user_bias = self.user_bias(user).squeeze()
         item_bias = self.item_bias(item).squeeze()
-        prediction = dot_product + user_bias + item_bias + self.global_bias
+        dot_product = (user_embedded * item_embedded).sum(1)
+        prediction = dot_product + user_bias + item_bias
         return prediction

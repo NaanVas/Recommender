@@ -1,14 +1,14 @@
 GridSearch:
   MatrixFactorization:
-    embedding_dim: [40, 100]
+    embedding_dim: [40, 80, 160]
     learning_rate: [0.001, 0.001]
-    weight_decay: [0.0, 0.0001]
-    epochs: [10]
+    weight_decay: [0.001,0.0001]
+    epochs: [100, 500, 800]
     batch_size: [1024]
 
   NMF:
     latent_factors: [15, 50]
     learning_rate: [0.01, 0.001]
-    epochs: [10]
-    batch_size: [512]
+    epochs: [50, 100, 500, 800]
+    batch_size: [1024]
     weight_decay: [0.001, 0.01]

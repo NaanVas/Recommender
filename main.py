@@ -4,7 +4,7 @@ import argparse
 import yaml
 import pandas as pd
 from dataset.dataset import RatingsDataset
-from utils import train_model, evaluate_model, grid_search, load_model, load_stats, create_dataloaders, set_seed, save_results_csv
+from utils import train_model, evaluate_model, grid_search, load_model, load_stats, create_dataloaders, set_seed, save_best_results_csv
 
 def main(base_name, model_type, grid_search_flag, use_gpu):
     set_seed(seed=11, use_gpu=use_gpu)
@@ -51,7 +51,7 @@ def main(base_name, model_type, grid_search_flag, use_gpu):
         model = train_model(model, train_loader, val_loader,lr=model_params['learning_rate'], epochs=model_params['epochs'], weight_decay=model_params['weight_decay'], device=device)
         results = evaluate_model(model, test_loader, device)
 
-        save_results_csv(results, model_type, base_name)
+        save_best_results_csv(results, model_type, base_name)
 
 
         print(f'Modelo treinado com melhores parametros.')
