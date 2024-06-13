@@ -63,16 +63,16 @@ def load_model(model_type, num_users, num_itens, params):
     module = importlib.import_module(f'models.{model_type}')
     model_class = getattr(module, model_type)
 
-    if model_type == 'MatrixFactorization':
+    if model_type == 'MatrixFactorization' or model_type == 'SVD':
         if params is None or 'embedding_dim' not in params:
-            print('Parâmetro "Embedding_dim" necessário para Matrix factorization não encontrado.')
+            #print(f'Parâmetro "Embedding_dim" necessário para {model_type} não encontrado.')
             return model_class(num_users, num_itens, embedding_dim = 20)
     
         return model_class(num_users, num_itens, params['embedding_dim'])
     
     if model_type == 'NMF':
         if params is None or 'latent_factors' not in params:
-            print('Parâmetro "latent_factors" necessário para NMF não encontrado.')
+            #print('Parâmetro "latent_factors" necessário para NMF não encontrado.')
             return model_class(num_users, num_itens, latent_factors = 20)
 
         return model_class(num_users, num_itens, params['latent_factors'])

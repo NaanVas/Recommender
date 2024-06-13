@@ -15,3 +15,11 @@ Movielens:
       learning_rate: 0.001
       weight_decay: 0.001
     BestRMSE: 1.1951579573712974
+  SVD:
+    BestParameters:
+      batch_size: 1024
+      embedding_dim: 160
+      epochs: 500
+      learning_rate: 0.001
+      weight_decay: 0.0001
+    BestRMSE: 0.9821059096186239
