@@ -4,7 +4,12 @@ import argparse
 import yaml
 import pandas as pd
 from dataset.dataset import RatingsDataset
-from utils import train_model, evaluate_model, grid_search, load_model, load_stats, create_dataloaders, set_seed, save_best_results_csv
+from utils.set_seed import set_seed
+from utils.loads import load_stats
+from utils.save import save_best_results_csv
+from utils.model import load_model, create_dataloaders, train_model
+from utils.metrics import evaluate_model
+from utils.gridsearch import grid_search
 
 def main(base_name, model_type, grid_search_flag, use_gpu):
     set_seed(seed=11, use_gpu=use_gpu)
