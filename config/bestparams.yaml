@@ -18,8 +18,25 @@ Movielens:
   SVD:
     BestParameters:
       batch_size: 1024
-      embedding_dim: 160
-      epochs: 500
+      embedding_dim: 80
+      epochs: 800
       learning_rate: 0.001
-      weight_decay: 0.0001
-    BestRMSE: 0.9821059096186239
+      weight_decay: 0.001
+    BestRMSE: 0.940300414646994
+MusicalInstruments:
+  MatrixFactorization:
+    BestParameters:
+      batch_size: 1024
+      embedding_dim: 40
+      epochs: 100
+      learning_rate: 0.001
+      weight_decay: 0.001
+    BestRMSE: 3.727030918583667
+  NMF:
+    BestParameters:
+      batch_size: 1024
+      epochs: 500
+      latent_factors: 50
+      learning_rate: 0.001
+      weight_decay: 0.001
+    BestRMSE: 4.412683430173939

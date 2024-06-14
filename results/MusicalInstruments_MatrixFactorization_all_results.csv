@@ -1,0 +1,3 @@
+embedding_dim,learning_rate,weight_decay,epochs,batch_size,rmse
+40,0.001,0.001,100,1024,3.727030918583667
+80,0.001,0.001,100,1024,3.727040642027755

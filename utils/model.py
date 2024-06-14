@@ -26,12 +26,19 @@ def load_model(model_type, num_users, num_itens, params):
 
         return model_class(num_users, num_itens, params['latent_factors'])
     
+    if model_type == 'AutoEncoder':
+        if params is None or 'embedding_dim' not in params or 'hidden_dim' not in params:
+            return model_class(num_users, num_itens, embedding_dim =20 , hidden_dim=512)
+    
+    return model_class(num_users, num_itens, params['embedding_dim'], params['hidden_dim'])
+
     return 0
 
 def create_dataloaders(train_dataset, val_dataset, test_dataset, batch_size):
-    train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
-    val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=True)
-    test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=True)
+    num_workers = 4
+    train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True, num_workers=num_workers)
+    val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=True,num_workers=num_workers)
+    test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=True,num_workers=num_workers)
     return train_loader, val_loader, test_loader
 
 
@@ -67,7 +74,7 @@ def train_model(model, train_loader, val_loader, lr, epochs, weight_decay, devic
         avg_train_loss = total_loss/len(train_loader)
         avg_val_loss = total_loss/len(val_loader)
 
-        #print(f'Epoch {epoch + 1}, Training Loss: {avg_train_loss:.4f}, Validation Loss: {avg_val_loss:.4f}')
+        print(f'Epoch {epoch + 1}, Training Loss: {avg_train_loss:.4f}, Validation Loss: {avg_val_loss:.4f}')
 
         if avg_val_loss < best_val_loss:
             best_val_loss = avg_val_loss

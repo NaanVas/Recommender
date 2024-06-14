@@ -1,21 +1,29 @@
 GridSearch:
   MatrixFactorization:
-    embedding_dim: [40, 80]
-    learning_rate: [0.001]
-    weight_decay: [0.001]
-    epochs: [100]
-    batch_size: [1024]
-
-  NMF:
-    latent_factors: [15, 50]
-    learning_rate: [0.01, 0.001]
-    epochs: [50, 100, 500, 800]
-    batch_size: [1024]
-    weight_decay: [0.001, 0.01]
-
-  SVD:
-    embedding_dim: [40, 80, 160]
+    embedding_dim: [40, 80, 160, 250]
     learning_rate: [0.001, 0.01] 
     weight_decay: [0.001, 0.0001] 
     epochs: [100, 500, 800]  
+    batch_size: [1024]
+
+  NMF:
+    latent_factors: [50, 100, 180, 250]
+    learning_rate: [0.1, 0.01, 0.001]
+    epochs: [100, 500, 800]
+    batch_size: [1024]
+    weight_decay: [0.0001, 0.001, 0.01]
+
+  SVD:
+    embedding_dim: [40, 80, 160, 250]
+    learning_rate: [0.001, 0.01] 
+    weight_decay: [0.001, 0.0001] 
+    epochs: [100, 500, 800]  
+    batch_size: [1024]
+
+  AutoEncoder:
+    embedding_dim: [40, 80, 160, 250]
+    hidden_dim: [256, 512, 1024]
+    learning_rate: [0.001, 0.01] 
+    weight_decay: [0.001, 0.0001] 
+    epochs: [200, 500, 800]  
     batch_size: [1024]
