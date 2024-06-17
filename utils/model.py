@@ -26,9 +26,11 @@ def load_model(model_type, num_users, num_itens, params):
 
         return model_class(num_users, num_itens, params['latent_factors'])
     
-    if model_type == 'AutoEncoder':
+    if model_type == 'AutoEncoder' or model_type == 'MLP':
         if params is None or 'embedding_dim' not in params or 'hidden_dim' not in params:
-            return model_class(num_users, num_itens, embedding_dim =20 , hidden_dim=512)
+            return model_class(num_users, num_itens, embedding_dim =20 , hidden_dim=64)
+    
+
     
     return model_class(num_users, num_itens, params['embedding_dim'], params['hidden_dim'])
 

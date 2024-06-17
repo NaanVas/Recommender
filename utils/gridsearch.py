@@ -22,6 +22,8 @@ def grid_search(model, model_type, train_dataset, val_dataset, test_dataset, bas
         
         model = train_model(model, train_loader, val_loader, lr=params['learning_rate'], epochs=params['epochs'], weight_decay=params['weight_decay'],device=device)
         results = evaluate_model(model, test_loader, device)
+        rmse = results['rmse']
+        print(f'Results {rmse}')
 
         results_list.append({'params': params, 'results': results})
 
