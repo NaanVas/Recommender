@@ -12,7 +12,7 @@ def load_model(model_type, num_users, num_itens, params):
     module = importlib.import_module(f'models.{model_type}')
     model_class = getattr(module, model_type)
 
-    if model_type == 'MatrixFactorization' or model_type == 'SVD':
+    if model_type in ['MatrixFactorization', 'SVD']:
         if params is None or 'embedding_dim' not in params:
             #print(f'Parâmetro "Embedding_dim" necessário para {model_type} não encontrado.')
             return model_class(num_users, num_itens, embedding_dim = 20)
@@ -26,13 +26,19 @@ def load_model(model_type, num_users, num_itens, params):
 
         return model_class(num_users, num_itens, params['latent_factors'])
     
-    if model_type == 'AutoEncoder' or model_type == 'MLP':
+    if model_type == 'AutoEncoder':
         if params is None or 'embedding_dim' not in params or 'hidden_dim' not in params:
             return model_class(num_users, num_itens, embedding_dim =20 , hidden_dim=64)
     
+        return model_class(num_users, num_itens, params['embedding_dim'], params['hidden_dim'])
+
+    if model_type == 'MLP':
+        if params is None or 'embedding_dim' not in params or 'hidden_dims' not in params:
+            return model_class(num_users, num_itens, embedding_dim = 20, hidden_dims=[64,32])
+    
+        return model_class(num_users, num_itens, params['embedding_dim'], params['hidden_dims'])
 
     
-    return model_class(num_users, num_itens, params['embedding_dim'], params['hidden_dim'])
 
     return 0
 
