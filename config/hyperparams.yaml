@@ -39,10 +39,10 @@ GridSearch:
     batch_size: [1024]
 
   RNN:
-    embedding_dim: [30, 40]
+    embedding_dim: [30, 50,60]
     hidden_dim: [50, 100]
-    num_layers: [1, 2, 3]
+    num_layers: [1, 2]
     learning_rate: [0.001, 0.01]
     batch_size: [512]
-    epochs: [20, 40, 80]
+    epochs: [40, 80, 160]
     weight_decay: [0.0001, 0.0]
