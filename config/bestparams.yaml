@@ -11,12 +11,14 @@ Movielens:
   MLP:
     BestParameters:
       batch_size: 1024
-      embedding_dim: 10
-      epochs: 50
-      hidden_dim: 32
+      embedding_dim: 30
+      epochs: 20
+      hidden_dims:
+      - 62
+      - 32
       learning_rate: 0.01
       weight_decay: 0.001
-    BestRMSE: 0.9343398875397783
+    BestRMSE: 0.9330343062624212
   MatrixFactorization:
     BestParameters:
       batch_size: 1024
