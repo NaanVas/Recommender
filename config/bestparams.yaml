@@ -44,7 +44,7 @@ Movielens:
       learning_rate: 0.001
       num_layers: 1
       weight_decay: 0.0001
-    BestRMSE: 0.9383374288671722
+    BestRMSE: 0.9385200037910056
   SVD:
     BestParameters:
       batch_size: 1024
