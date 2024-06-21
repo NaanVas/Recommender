@@ -43,6 +43,12 @@ def load_model(model_type, num_users, num_itens, params):
             return model_class(num_users, num_itens, embedding_dim = 20, hidden_dim=50, num_layers=1)
     
         return model_class(num_users, num_itens, params['embedding_dim'], params['hidden_dim'], params['num_layers'])
+    
+    if model_type == 'CNN':
+        if params is None or 'embedding_dim' not in params or 'num_filters' not in params :
+            return model_class(num_users, num_itens, embedding_dim=20, num_filters=50)
+    
+        return model_class(num_users, num_itens, params['embedding_dim'], params['num_filters'])
     return 0
 
 def create_dataloaders(train_dataset, val_dataset, test_dataset, batch_size):

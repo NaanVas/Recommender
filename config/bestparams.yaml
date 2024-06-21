@@ -8,6 +8,15 @@ Movielens:
       learning_rate: 0.01
       weight_decay: 0.001
     BestRMSE: 0.9363961715066758
+  CNN:
+    BestParameters:
+      batch_size: 128
+      embedding_dim: 30
+      epochs: 160
+      learning_rate: 0.001
+      num_filters: 50
+      weight_decay: 0.01
+    BestRMSE: 0.948735369141037
   MLP:
     BestParameters:
       batch_size: 1024
